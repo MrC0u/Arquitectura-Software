@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obtener Código QR</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            margin: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007BFF;
+        }
+
+        form {
+            margin: 20px auto;
+            max-width: 300px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        p {
+            margin-top: 20px;
+            color: #007BFF;
+        }
+
+        img {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        button {
+            margin-top: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Código QR:</h1>
+
+    <form method="post" action="/">
+        <label for="usuario">Usuario:</label>
+        <input type="text" id="usuario" name="usuario" required><br>
+
+        <label for="clave">Clave:</label>
+        <input type="password" id="clave" name="clave" required><br>
+
+        <input type="submit" value="Enviar">
+    </form>
+
+    <p>{{ mensaje }}</p>
+
+    {% if qr_path %}
+        <img src="{{ url_for('static', filename=qr_path) }}" alt="Código QR">
+        <form method="post" action="/get_qr_code">
+            <button type="submit">Descargar QR</button>
+        </form>
+    {% endif %}
+
+</body>
+</html>
