@@ -32,31 +32,33 @@ class ServiceRegistro:
             # Comunicación con el servicio de Base de Datos
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as db_socket:
                 # Buscar trabajador por rut
-                request_id = (f"{transaccion}busca{rut_trabajador}")
+                request_id = f"{transaccion}busca{rut_trabajador}"
                 db_socket.connect(('localhost', 5003))
                 db_socket.send(request_id.encode())
                 db_response = db_socket.recv(1024).decode()
                 
                 id_trabajador = db_response[2:]
-                    
+
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as db_socket2: 
                 # Registrar trabajador
-                if(id_trabajador is None):
-                    request_regis = (f"{transaccion}{service_name}{data}")
-                    db_socket.send(request_regis.encode())
-                    db_response = db_socket.recv(1024).decode()
+                if( str(id_trabajador) == "None"):
+                    request_regis = f"{transaccion}regis{data}"
+                    db_socket2.connect(('localhost', 5003))
+                    db_socket2.send(request_regis.encode())
+                    db_response = db_socket2.recv(1024).decode()
                     status= db_response[:2]
                     id_trabajador = db_response[2:]
-                    response = {f"{transaccion}{db_response}Usuario registrado con id '{id_trabajador}'."}
+                    response = f"{transaccion}{status}Usuario registrado con id '{id_trabajador}'."
                 else:
-                    response = (f"{transaccion}SREl usuario ya se encuentra registrado con id '{id_trabajador}'.")
+                    response = f"{transaccion}SREl usuario ya se encuentra registrado con id '{id_trabajador}'."
 
                 # Respuesta Cliente
                 self.imprimir(response)
-                client_socket.sendall(response.encode())
-            except Exception as e:
-                self.imprimir(e)
-                response = (f"{SR}{e}")
-                return response
+                client_socket.sendall(str(response).encode())
+        except Exception as e:
+            self.imprimir(e)
+            response = (f"SR{e}")
+            return response
 
 
     def run(self):

@@ -7,6 +7,7 @@ from modules.get_port import get_available_local_port
 from modules.send_request import send_request
 from modules.codigo_generator import generar_codigo
 from modules.handle_response import response_print
+from cliente.qr_read import leer_qr
 
 class Admin:
     def __init__(self):
@@ -25,8 +26,8 @@ class Admin:
                 local_port = get_available_local_port()
                 # Registro de trabajador
                 if opcion == 1:
-                    # Leyendo QR
-
+                    # Leer QR
+                    qr_code = leer_qr()
                     # Envio de datos
                     response = send_request("regis", data, local_port)
                     response_print(response)

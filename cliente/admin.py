@@ -7,6 +7,7 @@ from modules.get_port import get_available_local_port
 from modules.send_request import send_request
 from modules.codigo_generator import generar_codigo
 from modules.handle_response import response_print
+from modules.qr_read import leer_qr
 
 class Admin:
     def __init__(self):
@@ -42,22 +43,48 @@ class Admin:
                 
                 # Ingreso de trabajador
                 elif opcion == 2:
-                    id_trabajador = input("Ingrese ID del trabajador: ")
-                    status, response = send_request("ingre", id_trabajador, local_port)
-                    if status == "OK":
-                        print(f"Trabajador {id_trabajador} ingresó correctamente.")
+                    # Activar para saltar la lectura de codigo (Y obtener el ultimo de la BD).
+                    bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    
+                    if(bypass == 'y' or bypass == '1'):
+                        print("--- o ---")
+                        data_request = input("Ingrese el 'id' del trabajador: ")
+                        service_name = "qring"
                     else:
-                        print(f"Error en el ingreso del trabajador {id_trabajador}: {response}")
-                
+                        # Lectura de QR
+                        print("Acerque el codigo QR a la camara.")
+                        service_name = "ingre"
+                        data_request = leer_qr()
+
+                    response = send_request(service_name, data_request, local_port)
+                    
+                    transaccion = response[:5]
+                    status = response[5:7]
+                    data = response[7:]
+
+                    response_print(response)
                 # Salida de trabajador
                 elif opcion == 3:
-                    id_trabajador = input("Ingrese ID del trabajador: ")
-                    status, response = send_request("salid", id_trabajador, local_port)
-                    if status == "OK":
-                        print(f"Trabajador {id_trabajador} ingresó correctamente.")
+                    # Activar para saltar la lectura de codigo (Y obtener el ultimo de la BD).
+                    bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    
+                    if(bypass == 'y' or bypass == '1'):
+                        print("--- o ---")
+                        data_request = input("Ingrese el 'id' del trabajador: ")
+                        service_name = "qrsal"
                     else:
-                        print(f"Error en el ingreso del trabajador {id_trabajador}: {response}")
-                
+                        # Lectura de QR
+                        print("Acerque el codigo QR a la camara.")
+                        service_name = "salid"
+                        data_request = leer_qr()
+
+                    response = send_request(service_name, data_request, local_port)
+                    
+                    transaccion = response[:5]
+                    status = response[5:7]
+                    data = response[7:]
+
+                    response_print(response)
                 # Verificar estado del trabajador
                 elif opcion == 4:
                     id_trabajador = input("Ingrese ID del trabajador: ")

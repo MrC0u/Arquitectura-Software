@@ -6,6 +6,8 @@ def send_request(service_name, data, port):
 
         if(service_name == "regis"):
             destination_address = ('localhost', 5001)
+        if(service_name == "ingre" or service_name == "qring" or service_name == "qrsal" or service_name == "salid"):
+            destination_address = ('localhost', 5005)
 
             
         sock.connect(destination_address)
