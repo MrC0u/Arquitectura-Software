@@ -244,6 +244,33 @@ class DatabaseService:
             return nombre[0]
         else:
             return 'None'
+        
+    def estado(self,data):
+        self.cursor.execute(
+            "SELECT registro.id, registro.fecha_hora, registro.registro, usuario.nombre FROM registro JOIN usuario ON registro.user_id = usuario.id WHERE usuario.rut = ? ORDER BY registro.fecha_hora DESC LIMIT 1",
+            data
+        )
+
+        state = self.cursor.fetchone()
+        if(state is not None):
+            return state
+        else:
+            return 'None'
+        
+    def historial(self):
+        self.cursor.execute(
+            "SELECT registro.id, usuario.id, usuario.nombre, usuario.rut, usuario.area_id, registro.registro, registro.fecha_hora FROM registro JOIN usuario ON registro.user_id = usuario.id"
+        )
+        historial = self.cursor.fetchall()
+        return historial
+    
+    def cantidad_ingresados(self,data):
+        self.cursor.execute(
+            "SELECT COUNT(DISTINCT usuario.id) FROM usuario JOIN registro ON usuario.id = registro.user_id WHERE registro.id IN ( SELECT MAX(id) FROM registro GROUP BY user_id ) AND registro.registro = 'ingresado' AND usuario.area_id = ?",
+            data
+        )
+        cantidad = self.cursor.fetchone()[0]
+        return cantidad
 
     def handle_request(self, request):
         try:
@@ -271,6 +298,12 @@ class DatabaseService:
                 response = self.get_qr(data)
             elif service_name == "estad":
                 response = self.get_last_state(data)
+            elif service_name == "infou":
+                response = self.estado(data)
+            elif service_name == "canti":
+                response = self.cantidad_ingresados(data)
+            elif service_name == "histo":
+                response = self.historial()
             else:
                 response = (f"No se encuentra el servicio '{service_name}'.")
                 status = "BD"

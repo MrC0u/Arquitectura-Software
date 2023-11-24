@@ -1,5 +1,7 @@
 import socket
 import sys
+import re
+from tabulate import tabulate
 
 sys.path.insert(0, '..')
 from modules.error_message import error_print
@@ -20,8 +22,10 @@ class Admin:
                 print("1. Registrar trabajador")
                 print("2. Ingreso de trabajador")
                 print("3. Salida de trabajador")
-                print("4. Verificar estado de trabajador")
-                print("5. Salir")
+                print("4. Verificar estado de trabajador por rut")
+                print("5. Historial de accesos")
+                print("6. Verificar cantidad de empleados dentro de un departamento")
+                print("7. Salir")
 
                 opcion = int(input("Seleccione una opción: "))
                 local_port = get_available_local_port()
@@ -44,7 +48,8 @@ class Admin:
                 # Ingreso de trabajador
                 elif opcion == 2:
                     # Activar para saltar la lectura de codigo (Y obtener el ultimo de la BD).
-                    bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    #bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    bypass = "n"
                     
                     if(bypass == 'y' or bypass == '1'):
                         print("--- o ---")
@@ -66,7 +71,8 @@ class Admin:
                 # Salida de trabajador
                 elif opcion == 3:
                     # Activar para saltar la lectura de codigo (Y obtener el ultimo de la BD).
-                    bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    #bypass = input("[ADMIN] Bypass activado? y/n: ")
+                    bypass = "n"
                     
                     if(bypass == 'y' or bypass == '1'):
                         print("--- o ---")
@@ -87,15 +93,49 @@ class Admin:
                     response_print(response)
                 # Verificar estado del trabajador
                 elif opcion == 4:
-                    id_trabajador = input("Ingrese ID del trabajador: ")
-                    status, response = send_request("estad", id_trabajador, local_port)
-                    if status == "OK":
-                        print(f"Trabajador {id_trabajador} ingresó correctamente.")
+                    rut_trabajador = input("Ingrese rut del trabajador: ")
+                    service_name = "infou"
+                    response = send_request(service_name, rut_trabajador, local_port)
+                    
+                    transaccion = response[:5]
+                    status = response[5:7]
+                    data = response[7:]
+
+                    if(status == "SI"):
+                        response_print(response)
                     else:
-                        print(f"Error en el ingreso del trabajador {id_trabajador}: {response}")
-                
-                # Salir
+                        data_content = re.findall(r"'([^']+)'", data)
+                        response_print(f"{transaccion}{status}\n# Rut: {rut_trabajador} \n# Nombre: {data_content[2]} \n# Registro: {data_content[1]} \n# Fecha: {data_content[0]}")
+                # Historial de accesos
                 elif opcion == 5:
+                    service_name = "histo"
+                    response = send_request(service_name, "None", local_port)
+                    
+                    transaccion = response[:5]
+                    status = response[5:7]
+                    data = response[7:]
+                    lista = eval(data)
+                    print(lista)
+                    if(status == "SI"):
+                        response_print(response)
+                    else:
+                        tabla = tabulate(lista, headers=["ID","User ID","Nombre","RUT","ID Area","Registro","Fecha Y Hora"], tablefmt="grid")
+                        response_print(f"{transaccion}{status}\n{tabla}")
+                
+                
+                # Cantidad de usuarios dentro de un departamento
+                elif opcion == 6:
+                    service_name = "canti"
+                    id_departamento = input("Ingrese el id del departamento: ")
+                    response = send_request(service_name, id_departamento, local_port)
+                    
+                    transaccion = response[:5]
+                    status = response[5:7]
+                    data = response[7:]
+
+                    response_print(response)
+                # Salir
+                elif opcion == 7:
                     break
             except Exception as e:
                 error_print(e)

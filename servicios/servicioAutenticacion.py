@@ -11,7 +11,7 @@ class ServiceAuth:
         self.server_address = ('localhost', 5005)
 
     def imprimir(self, data):
-        print("Registro| ", data)
+        print("Auth| ", data)
 
     def handle_request(self, client_socket):
         try:
@@ -27,6 +27,11 @@ class ServiceAuth:
                 id_trabajador = data[0]
             else:
                 data = data_content.strip('()').split('.')
+                if(len(data) != 2):
+                    response = f"{transaccion}SACodigo QR no valido."
+                    self.imprimir("CodigoQR No valido")
+                    client_socket.sendall(response.encode())
+                    return None
                 id_trabajador = data[0] 
                 qr_code = data[1]
 
@@ -85,7 +90,6 @@ class ServiceAuth:
                 if(service_name == "qring" or service_name == "ingre"):
                     print("ingresando")
                     if(str(registro[0]) == "None" or str(registro[0]) == "retirado"):
-                        print("oe yapo")
                         # Comunicación con el servicio de Base de Datos
                         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as db_socket2:
                             # Buscar trabajador por rut
@@ -115,7 +119,7 @@ class ServiceAuth:
                     else:
                         service_response = f"{transaccion}SAAcceso Denegado: El usuario con id '{id_trabajador}' ya se encuentra retirado."
             else:
-                service_response = f"{transaccion}SAAcceso Denegado: El codigo QR no es el ultimo registrado en el sistema."
+                service_response = f"{transaccion}SAAcceso Denegado: El codigo QR no es el ultimo registrado en el sistema para el usuario id '{id_trabajador}'."
             # Respuesta Cliente
             self.imprimir(service_response)
             client_socket.sendall(service_response.encode())
